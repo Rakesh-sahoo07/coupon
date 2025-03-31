@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarClock, Store, QrCode, Share2, CheckCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { 
   Dialog,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useWallet } from "@/contexts/WalletContext";
 
 interface CouponCardProps {
   id: string;
@@ -28,6 +29,7 @@ interface CouponCardProps {
   style?: React.CSSProperties;
   onUse?: () => void;
   onShare?: (email: string) => void;
+  organizationId?: string;
 }
 
 export function CouponCard({
@@ -40,7 +42,8 @@ export function CouponCard({
   className,
   style,
   onUse,
-  onShare
+  onShare,
+  organizationId
 }: CouponCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -48,6 +51,28 @@ export function CouponCard({
   const [shareEmail, setShareEmail] = useState("");
   const [isSharing, setIsSharing] = useState(false);
   const [isUsing, setIsUsing] = useState(false);
+  const [organizationDetails, setOrganizationDetails] = useState(null);
+  const { contract } = useWallet();
+
+  // Fetch organization details if needed
+  useEffect(() => {
+    const fetchOrganizationDetails = async () => {
+      if (contract && organizationId && !organizationDetails) {
+        try {
+          const orgData = await contract.getOrganization(organizationId);
+          setOrganizationDetails({
+            id: organizationId,
+            name: orgData[1], // Organization name is at index 1
+            description: orgData[2] // Description is at index 2
+          });
+        } catch (error) {
+          console.error("Error fetching organization details:", error);
+        }
+      }
+    };
+
+    fetchOrganizationDetails();
+  }, [contract, organizationId, organizationDetails]);
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -76,13 +101,63 @@ export function CouponCard({
     setIsSharing(true);
     
     try {
+      // First, call the smart contract function to share the coupon
       if (onShare) {
+        // This will update the blockchain state
         await onShare(shareEmail);
       }
+      
+      // Then call the email service to send notification
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.warning("Email notification not sent - authentication required");
+      } else {
+        // Construct the full redemption URL
+        const redeemUrl = `${window.location.origin}/redeem/${code}`;
+        
+        // Get organization description if available
+        const description = organizationDetails?.description || 
+          `This coupon provides you with ${discount} at ${organization}.`;
+        
+        // Calculate expiry date if not provided
+        const formattedExpiresAt = expiresAt || (() => {
+          const date = new Date();
+          date.setDate(date.getDate() + 30);
+          return date.toLocaleDateString();
+        })();
+        
+        // Send request to backend email service
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/email/send-coupon`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            recipientEmail: shareEmail,
+            couponCode: code,
+            discount: discount,
+            organizationName: organization,
+            description: description,
+            expiresAt: formattedExpiresAt,
+            redeemUrl: redeemUrl
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Email API error:", errorData);
+          toast.warning("Coupon shared on blockchain, but email notification failed");
+        } else {
+          toast.success("Coupon shared successfully with email notification!");
+        }
+      }
+      
       setIsShareDialogOpen(false);
       setShareEmail("");
     } catch (error) {
       console.error("Error sharing coupon:", error);
+      toast.error(error.message || "Failed to share coupon");
     } finally {
       setIsSharing(false);
     }
@@ -242,6 +317,11 @@ export function CouponCard({
                 <p className="text-xs text-muted-foreground mt-1">
                   Coupon code: {code}
                 </p>
+                {expiresAt && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Expires: {expiresAt}
+                  </p>
+                )}
               </div>
             </div>
             
