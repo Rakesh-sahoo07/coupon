@@ -1,0 +1,233 @@
+# Loyalty Luminary - Blockchain-Powered Loyalty Coupon System
+
+Loyalty Luminary is a decentralized application that enables businesses to create, manage, and distribute loyalty coupons to their customers using blockchain technology. This ensures transparency, security, and immutability of coupon transactions.
+
+![Loyalty Luminary](https://i.imgur.com/placeholder.png)
+
+## Technology Stack
+
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development and building
+- **React Router** for navigation
+- **TailwindCSS** for styling with shadcn/ui components
+- **Framer Motion** for animations
+- **Ethers.js** for blockchain interactions
+- **React Query** for server state management
+- **Sonner** for toast notifications
+
+### Backend
+- **Nest.js** RESTful API service
+- **MongoDB** for database storage
+- **JWT** for authentication
+- **TypeORM** for database interactions
+- **Swagger** for API documentation
+
+### Blockchain
+- **Solidity** smart contract (version 0.8.20)
+- **OpenZeppelin** for secure contract implementations
+- **Deployed on Sepolia Testnet**
+- **Contract Address**: `0x13E037CD53B9dB90Cec8Cca7f2987Cd246a4e0e6`
+
+## Features
+
+- **Organization Management**: Create and manage organizations for loyalty programs
+- **Coupon Creation**: Generate unique coupons with discount amounts, expiration dates
+- **Blockchain Storage**: All coupon states are stored on the Ethereum blockchain
+- **Wallet Integration**: Connect MetaMask wallet to interact with the smart contract
+- **Email Sharing**: Share coupons with users via email
+- **Redemption**: Use coupons through a simple interface
+- **Admin Dashboard**: Analytics and management for organization owners
+
+## Smart Contract
+
+The smart contract, written in Solidity, manages the core business logic:
+
+- Organization creation and management
+- Coupon creation with unique codes
+- Coupon ownership and transfer logic
+- Coupon redemption and verification
+
+The contract is deployed on the Sepolia test network at address: `0x13E037CD53B9dB90Cec8Cca7f2987Cd246a4e0e6`
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18+)
+- npm or yarn
+- MongoDB
+- MetaMask wallet extension
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/loyalty-luminary.git
+   cd loyalty-luminary
+   ```
+
+2. **Install frontend dependencies**
+   ```bash
+   cd loyalty-luminary
+   npm install
+   ```
+
+3. **Install backend dependencies**
+   ```bash
+   cd ../backend
+   npm install
+   ```
+
+4. **Install smart contract dependencies**
+   ```bash
+   cd ../smart-contract
+   npm install
+   ```
+
+### Configuration
+
+1. **Frontend configuration**
+   Create a `.env` file in the `loyalty-luminary` directory:
+   ```
+   VITE_API_URL=http://localhost:3000
+   ```
+
+2. **Backend configuration**
+   Create a `.env` file in the `backend` directory:
+   ```
+# Server
+PORT=3000
+NODE_ENV=development
+
+# MongoDB
+MONGODB_URI=mongodb_uri
+
+# JWT
+JWT_SECRET=your_secret_key
+JWT_EXPIRES_IN=7d
+
+# Email
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_USER=your.gmail@gmail.com
+EMAIL_PASSWORD=your_passsword
+EMAIL_FROM=Loyalty Coupon <your.gmail@gmail.com>
+   ```
+
+3. **Smart Contract**
+   The smart contract is already deployed at `0x13E037CD53B9dB90Cec8Cca7f2987Cd246a4e0e6` on Sepolia testnet.
+
+### Running the Application
+
+1. **Start MongoDB**
+   ```bash
+   mongod
+   ```
+
+2. **Start the backend**
+   ```bash
+   cd backend
+   npm run start:dev
+   ```
+
+3. **Start the frontend**
+   ```bash
+   cd loyalty-luminary
+   npm run dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:8080`
+
+## Usage
+
+1. **Connect Wallet**: 
+   - Click "Connect Wallet" button to connect your MetaMask wallet
+
+2. **Create an Organization**:
+   - Navigate to Organizations
+   - Click "Create Organization"
+   - Fill in the required details
+
+3. **Create Coupons**:
+   - Go to your organization
+   - Click "Create Coupon"
+   - Set discount amount and recipient email
+
+4. **Manage Coupons**:
+   - View all your coupons under "My Coupons"
+   - Share, use, or manage coupons
+
+5. **Redeem a Coupon**:
+   - Enter the coupon code received via email
+   - Connect your wallet and redeem the coupon
+
+## Architecture
+
+### Frontend-Blockchain Integration
+
+The frontend connects directly to the Ethereum blockchain using Ethers.js. Key interactions:
+
+1. User connects MetaMask wallet
+2. Frontend retrieves smart contract instance
+3. Frontend can call contract methods directly:
+   - Create organizations
+   - Create coupons
+   - Link coupons to wallets
+   - Redeem coupons
+
+### Backend-Database Integration
+
+The backend stores additional information not suitable for blockchain storage:
+
+1. User profiles and authentication
+2. Extended organization details
+3. Analytics data
+4. Email notifications
+
+MongoDB provides a flexible document database for these components.
+
+## Development
+
+### Smart Contract Development
+
+To modify the smart contract:
+
+1. Edit `LoyaltyCoupon.sol` in the `smart-contract` directory
+2. Compile the contract:
+   ```bash
+   npx hardhat compile
+   ```
+3. Deploy using hardhat:
+   ```bash
+   npx hardhat run scripts/deploy.js --network sepolia
+   ```
+
+### Frontend Development
+
+1. Make changes to React components
+2. Run tests
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+
+### Backend Development
+
+1. Create or modify Nest.js modules, controllers, and services
+2. Update database schemas
+3. Run tests
+4. Build for production:
+   ```bash
+   npm run build
+   ```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- OpenZeppelin for secure contract libraries
+- shadcn/ui for beautiful React components
+- Ethereum and Sepolia testnet
